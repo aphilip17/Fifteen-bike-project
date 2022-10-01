@@ -17,7 +17,7 @@ const props = defineProps<FMapProps>();
 
 onMounted(() => {
   new Map({
-    accessToken: import.meta.env.VITE_MAPBOX_ACCESS_TOKEN,
+    accessToken: import.meta.env.VITE_MAPBOX_ACCESS_TOKEN as string,
     container: "map",
     style: "mapbox://styles/mapbox/light-v10",
     center: props.center,
