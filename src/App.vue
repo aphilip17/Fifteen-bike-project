@@ -1,6 +1,6 @@
 <template>
   <main>
-    <FMap :centre="mapCenter" />
+    <FMap :center="mapCenter" />
   </main>
 </template>
 
