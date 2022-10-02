@@ -14,7 +14,7 @@ export default defineConfig({
       '@/': `${path.join(__dirname, 'src')}/`,
     },
   },
-  plugins: [
+plugins: [
     Vue(),
     vuetify({ autoImport: true }),
   ],
