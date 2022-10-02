@@ -1,7 +1,9 @@
 <template>
-  <main>
-    <FMap :center="mapCenter" />
-  </main>
+  <v-app>
+    <v-main>
+      <FMap :center="mapCenter" />
+    </v-main>
+  </v-app>
 </template>
 
 <script setup lang="ts">

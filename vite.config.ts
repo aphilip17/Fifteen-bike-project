@@ -2,6 +2,9 @@ import path from 'path'
 import { defineConfig } from 'vite'
 import Vue from '@vitejs/plugin-vue'
 
+// https://github.com/vuetifyjs/vuetify-loader/tree/next/packages/vite-plugin
+import vuetify from 'vite-plugin-vuetify'
+
 export default defineConfig({
   root: 'src',
   publicDir: path.join(__dirname, '/public'),
@@ -13,5 +16,6 @@ export default defineConfig({
   },
   plugins: [
     Vue(),
+    vuetify({ autoImport: true }),
   ],
 })
