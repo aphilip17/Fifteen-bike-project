@@ -30,22 +30,39 @@ let map: Map;
 
 
 function addBikesToMap() {
-    map.addSource('bikes', {
-        type: 'geojson',
-        data: data.value
+    map.loadImage('../images/bicycle.png', (error, image) => {
+        if (error) throw error;
+        map.addImage('bicycle-icon', image as any, { sdf: true });
+        map.addSource('bikes', {
+            type: 'geojson',
+            data: data.value
+        });
+
+        map.addLayer({
+            'id': 'bikes-layer',
+            'source': 'bikes',
+            'type': 'symbol',
+            'layout': {
+            'icon-image': 'bicycle-icon',
+            'icon-size': 0.05
+            },
+            'paint': {
+                'icon-color': [
+                    'match',
+                    ['get', 'service_status'], /* Use the result 'service_status' property */
+                    1,
+                    '#008000',
+                    2,
+                    '#FF8C00',
+                    3,
+                    '#CC0000' ,
+                    '#000000' /* Fallback */
+                ]
+            }
+        });
     });
 
-    map.addLayer({
-        'id': 'bikes-layer',
-        'type': 'circle',
-        'source': 'bikes',
-        'paint': {
-            'circle-radius': 4,
-            'circle-stroke-width': 2,
-            'circle-color': 'red',
-            'circle-stroke-color': 'white'
-        }
-    });
+
 };
 
 function addPopUp(e: MapMouseEvent) {
