@@ -4,9 +4,9 @@
 
 <script setup lang="ts">
 
-import { Map, LngLatLike } from "mapbox-gl";
+import { Map, LngLatLike, Marker } from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
-import { onBeforeMount, onMounted } from "vue";
+import { onBeforeMount, onMounted, watch } from "vue";
 import { useFetchBikes } from "../composition/fetcher";
 
 export interface FMapProps {
@@ -25,6 +25,21 @@ const {
     fetchBikes
 } = useFetchBikes();
 
+let map: Map;
+
+function addBikesToMap() {
+    for (const bike of data.value!.bikes) {
+        const coords = bike.coordinates;
+        /* 'Coordinates must be defined' */
+        if (bike.coordinates.length &&
+            /* 'Invalid LngLat latitude value: must be between -90 and 90' */
+            bike.coordinates[0] < 90 && bike.coordinates[0] > -90 ) {
+            const marker = new Marker();
+            marker.setLngLat([coords[1], coords[0]]).addTo(map);
+        }
+    }
+};
+
 onBeforeMount(() => {
     fetchBikes();
     console.log(loading);
@@ -32,14 +47,19 @@ onBeforeMount(() => {
     console.log(data);
 });
 
-onMounted(async () => {
-    new Map({
+onMounted(() => {
+    map = new Map({
         accessToken: import.meta.env.VITE_MAPBOX_ACCESS_TOKEN as string,
         container: "map",
         style: "mapbox://styles/mapbox/light-v10",
         center: props.center,
         zoom: 9,
     });
+});
+
+watch(() => data.value, (data) => {
+    addBikesToMap();
+  console.log(data);
 });
 
 </script>
