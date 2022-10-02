@@ -4,7 +4,7 @@
 
 <script setup lang="ts">
 
-import { Map, LngLatLike, Marker, Popup } from "mapbox-gl";
+import { Map, LngLatLike, Popup, MapMouseEvent } from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { onBeforeMount, onMounted, onUnmounted, watch, createApp, defineComponent } from "vue";
 import PopUpComponent from "./PopUp.vue";
@@ -30,26 +30,38 @@ let map: Map;
 
 
 function addBikesToMap() {
-    for (const bike of data.value!.bikes) {
-        const coords = bike.coordinates;
-        /* 'Coordinates must be defined' */
-        if (bike.coordinates.length &&
-            /* 'Invalid LngLat latitude value: must be between -90 and 90' */
-            bike.coordinates[0] < 90 && bike.coordinates[0] > -90 ) {
-            const marker = new Marker();
-            marker
-                .setLngLat([coords[1], coords[0]])
-                .addTo(map)
-                .setPopup()
+    map.addSource('bikes', {
+        type: 'geojson',
+        data: data.value
+    });
+
+    map.addLayer({
+        'id': 'bikes-layer',
+        'type': 'circle',
+        'source': 'bikes',
+        'paint': {
+            'circle-radius': 4,
+            'circle-stroke-width': 2,
+            'circle-color': 'red',
+            'circle-stroke-color': 'white'
         }
-    }
+    });
 };
 
-function addPopUp(e: any) {
+function addPopUp(e: MapMouseEvent) {
+    const features = map.queryRenderedFeatures(e.point, {
+            layers: ['bikes-layer']
+        });
+
+    if (!features.length) {
+        return;
+    }
+
+    const coordinates = (features[0].geometry as GeoJSON.Point).coordinates;
     const popUp = new Popup();
 
     popUp
-        .setLngLat(e.lngLat)
+        .setLngLat(coordinates as LngLatLike)
         .setHTML('<div id="popup-content"></div>')
         .addTo(map);
 
@@ -83,7 +95,7 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
-    map.off("click", addPopUp);
+    map.off("click", "earthquakes-layer", addPopUp);
 });
 
 watch(() => data.value, (data) => {

@@ -1,11 +1,8 @@
+import { GeoJsonProperties, Geometry } from "geojson";
 import { ref } from "vue";
 
-interface FetchModel {
-    bikes: BikeModel[];
-    total: number;
-}
-
 export interface BikeModel {
+    id: string;
     serial_number: string;
     coordinates: [number, number];
     in_order: boolean;
@@ -15,14 +12,15 @@ export interface BikeModel {
 
 export function useFetchBikes() {
     const loading = ref(false);
-    const data = ref<FetchModel>();
+    const data = ref<GeoJSON.FeatureCollection<Geometry, GeoJsonProperties>>();
     const error = ref('');
 
     const fetchBikes = async () => {
         loading.value = true;
         try {
             const response = await fetch('https://629b3242656cea05fc354d33.mockapi.io/bikes');
-            data.value = await response.json();
+            const json = await response.json();
+            data.value = transformToGeojson(json.bikes);
         } catch (e) {
             error.value = 'Something went wrong when data loading';
         }
@@ -36,4 +34,42 @@ export function useFetchBikes() {
         error,
         fetchBikes,
     }
+}
+
+function transformToGeojson(datas: BikeModel[]) {
+    const geojson: any = {
+        type: "FeatureCollection",
+        features: [],
+    };
+
+    for (let i = 0; i < datas.length; i++) {
+        const data = datas[i];
+        /* Coordinates should be defined. */
+        const hasCoordinates = data.coordinates.length;
+        /* Invalid LngLat latitude value: must be between -90 and 90 */
+        const isLatitudeValid = data.coordinates[0] < 90 && data.coordinates[0] > -90;
+
+        /* Clean data */
+        if (!hasCoordinates || !isLatitudeValid) {
+            continue;
+        }
+
+        geojson.features.push({
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [data.coordinates[1], data.coordinates[0]]
+                },
+            "properties": {
+            "id": data.id,
+            "serial_number": data.serial_number,
+            "coordinates": data.coordinates,
+            "in_order": data.in_order,
+            "service_status": data.service_status,
+            "battery_level": data.battery_level
+            }
+        });
+    }
+
+    return geojson;
 }
