@@ -6,7 +6,9 @@
 
 import { Map, LngLatLike, Popup, MapMouseEvent } from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
-import { onBeforeMount, onMounted, onUnmounted, watch, createApp, defineComponent } from "vue";
+/* @ts-ignore */
+import vuetify from '../plugins/vuetify';
+import { onMounted, onUnmounted, watch, createApp, ref, inject } from "vue";
 import PopUpComponent from "./PopUp.vue";
 import { useFetchBikes } from "../composition/fetcher";
 
@@ -20,55 +22,72 @@ export interface FMapProps {
 const props = defineProps<FMapProps>();
 
 const {
-    loading,
     data,
-    error,
     fetchBikes
 } = useFetchBikes();
 
 let map: Map;
+let isMapReady = ref(false);
+let isImageLoaded = ref(false);
 
+const busEvent = inject('busEvent');
 
 function addBikesToMap() {
-    map.loadImage('../images/bicycle.png', (error, image) => {
+    if (isImageLoaded.value) {
+        createLayerSource();
+    } else {
+        map.loadImage('../images/bicycle.png', (error, image) => {
         if (error) throw error;
-        map.addImage('bicycle-icon', image as any, { sdf: true });
-        map.addSource('bikes', {
-            type: 'geojson',
-            data: data.value
-        });
 
-        map.addLayer({
-            'id': 'bikes-layer',
-            'source': 'bikes',
-            'type': 'symbol',
-            'layout': {
-            'icon-image': 'bicycle-icon',
-            'icon-size': 0.05
-            },
-            'paint': {
-                'icon-color': [
-                    'match',
-                    ['get', 'service_status'], /* Use the result 'service_status' property */
-                    1,
-                    '#008000',
-                    2,
-                    '#FF8C00',
-                    3,
-                    '#CC0000' ,
-                    '#000000' /* Fallback */
-                ]
-            }
+        map.addImage('bicycle-icon', image as any, { sdf: true });
+            isImageLoaded.value = true;
+            createLayerSource();
         });
+    }
+};
+
+
+function createLayerSource() {
+    if (map.getLayer('bikes-layer')) {
+        map.removeLayer('bikes-layer');
+    }
+    if (map.getSource('bikes')) {
+        map.removeSource('bikes');
+    }
+
+    map.addSource('bikes', {
+        type: 'geojson',
+        data: data.value
     });
 
-
-};
+    map.addLayer({
+        'id': 'bikes-layer',
+        'source': 'bikes',
+        'type': 'symbol',
+        'layout': {
+        'icon-image': 'bicycle-icon',
+        'icon-size': 0.05
+        },
+        'paint': {
+            'icon-color': [
+                'match',
+                ['get', 'service_status'], /* Use the result 'service_status' property */
+                1,
+                '#008000',
+                2,
+                '#FF8C00',
+                3,
+                '#CC0000' ,
+                '#000000' /* Fallback */
+            ]
+        }
+    });
+}
 
 function addPopUp(e: MapMouseEvent) {
     const features = map.queryRenderedFeatures(e.point, {
-            layers: ['bikes-layer']
-        });
+        layers: ['bikes-layer']
+    });
 
     if (!features.length) {
         return;
@@ -82,24 +101,15 @@ function addPopUp(e: MapMouseEvent) {
         .setHTML('<div id="popup-content"></div>')
         .addTo(map);
 
-    const MyNewPopup = defineComponent({
-        extends: PopUpComponent,
-        setup() {
-            const title = 'Test'
-            return { title }
-        },
-    });
-    createApp(MyNewPopup).mount('#popup-content');
+    const popUpProps = features[0].properties!;
+    createApp(PopUpComponent, {...popUpProps, busEvent: busEvent})
+        .use(vuetify)
+        .mount('#popup-content');
 };
 
-onBeforeMount(() => {
-    fetchBikes();
-    console.log(loading);
-    console.log(error);
-    console.log(data);
-});
 
 onMounted(() => {
+    fetchBikes();
     map = new Map({
         accessToken: import.meta.env.VITE_MAPBOX_ACCESS_TOKEN as string,
         container: 'map',
@@ -109,15 +119,26 @@ onMounted(() => {
     });
 
     map.on("click", addPopUp);
+    map.on('load', function() {
+        isMapReady.value = true;
+    });
+
+    (busEvent as any).on('updateBikeAttributes', () => {
+        fetchBikes();
+    });
 });
 
 onUnmounted(() => {
-    map.off("click", "earthquakes-layer", addPopUp);
+    map.off("click", addPopUp);
+    (busEvent as any).off();
 });
 
-watch(() => data.value, (data) => {
+watch([data, isMapReady], () => {
+    if (!isMapReady.value || !data.value) {
+        return;
+    }
     addBikesToMap();
-  console.log(data);
+    console.log(data);
 });
 
 </script>

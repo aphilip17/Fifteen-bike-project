@@ -15,11 +15,12 @@ export function useFetchBikes() {
     const data = ref<GeoJSON.FeatureCollection<Geometry, GeoJsonProperties>>();
     const error = ref('');
 
-    const fetchBikes = async () => {
+    const fetchBikes = async function () {
         loading.value = true;
         try {
             const response = await fetch('https://629b3242656cea05fc354d33.mockapi.io/bikes');
             const json = await response.json();
+            console.log(json, 'JSON');
             data.value = transformToGeojson(json.bikes);
         } catch (e) {
             error.value = 'Something went wrong when data loading';
@@ -72,4 +73,30 @@ function transformToGeojson(datas: BikeModel[]) {
     }
 
     return geojson;
+}
+
+export function useUpdateBikeAttributes(id: string) {
+    const data = ref<BikeModel>();
+    const error = ref('');
+    const updateBikeAttributes = async (updatedData: any) => { /* TODO: Type */
+        try {
+            const response = await fetch('https://629b3242656cea05fc354d33.mockapi.io/bikes/' + id, {
+                method: "PUT",
+                headers: {
+                    'Content-type': 'application/json'
+                },
+                body: JSON.stringify(updatedData)
+            });
+            data.value = await response.json();
+
+        } catch (e) {
+            error.value = 'Error when updating data';
+        }
+    }
+
+    return {
+        data,
+        error,
+        updateBikeAttributes,
+    }
 }

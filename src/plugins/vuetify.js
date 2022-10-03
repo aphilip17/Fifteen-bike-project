@@ -1,5 +1,5 @@
 // Styles
-import 'vuetify/styles';
+import 'vuetify/styles'
 
 // Vuetify
 import { createVuetify } from 'vuetify';
