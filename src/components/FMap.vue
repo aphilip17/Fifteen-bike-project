@@ -1,5 +1,9 @@
 <template>
     <div id="map" style="height: 100%"></div>
+    <BikeCreation
+        @addBike="onAddBike"
+    >
+    </BikeCreation>
 </template>
 
 <script setup lang="ts">
@@ -11,6 +15,7 @@ import vuetify from '../plugins/vuetify';
 import { onMounted, onUnmounted, watch, createApp, ref, inject } from "vue";
 import PopUpComponent from "./PopUp.vue";
 import { useFetchBikes } from "../composition/fetcher";
+import BikeCreation from "./BikeCreation.vue";
 
 export interface FMapProps {
     /**
@@ -107,6 +112,9 @@ function addPopUp(e: MapMouseEvent) {
         .mount('#popup-content');
 };
 
+function onAddBike() {
+    fetchBikes();
+}
 
 onMounted(() => {
     fetchBikes();

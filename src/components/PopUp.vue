@@ -38,6 +38,11 @@ import { ref, watch } from 'vue';
 
     import { useUpdateBikeAttributes } from "../composition/fetcher";
 
+    type VSelectOpts = {
+        value: number;
+        title: string
+    }
+
     const props = defineProps<{
         id: string;
         serial_number: string;
@@ -45,7 +50,7 @@ import { ref, watch } from 'vue';
         in_order: boolean | string;
         service_status: number;
         battery_level: number | string;
-        busEvent: any;
+        busEvent: any; /* XXX: Should be typed */
     }>();
 
     const {
@@ -57,7 +62,7 @@ import { ref, watch } from 'vue';
 
     let hasChanges = ref(false);
     let selectedInOrder = ref(props.in_order);
-    let serviceStatusSelected = ref<any>(props.service_status);
+    let serviceStatusSelected = ref<VSelectOpts | number>(props.service_status);
 
     watch([serialNumber, selectedInOrder, serviceStatusSelected, batteryLevel], () => {
         hasChanges.value = true;
@@ -65,16 +70,14 @@ import { ref, watch } from 'vue';
 
     async function clickOnSaveButton() {
         hasChanges.value = false;
-
         const updatedData = {
             serial_number: serialNumber.value,
             in_order: selectedInOrder.value,
-            service_status: serviceStatusSelected.value.value,
+            service_status: (serviceStatusSelected.value as VSelectOpts).value,
             battery_level: batteryLevel.value,
         };
         await updateBikeAttributes(updatedData);
         props.busEvent.emit('updateBikeAttributes');
     }
-
 
 </script>
