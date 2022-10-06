@@ -4,6 +4,11 @@
         @addBike="onAddBike"
     >
     </BikeCreation>
+    <RadioButtons
+        :options="['dark', 'light']"
+        :checked="'light'"
+        @change="onBasemapChange"
+    ></RadioButtons>
 </template>
 
 <script setup lang="ts">
@@ -16,6 +21,7 @@ import { onMounted, onUnmounted, watch, createApp, ref, inject } from "vue";
 import PopUpComponent from "./PopUp.vue";
 import { useFetchBikes } from "../composition/fetcher";
 import BikeCreation from "./BikeCreation.vue";
+import RadioButtons from "./RadioButtons.vue";
 
 export interface FMapProps {
     /**
@@ -116,6 +122,14 @@ function onAddBike() {
     fetchBikes();
 }
 
+function onBasemapChange(mode: string) {
+    if (mode === 'dark') {
+        map.setStyle('mapbox://styles/mapbox/dark-v10');
+    } else {
+        map.setStyle('mapbox://styles/mapbox/light-v10');
+    }
+}
+
 onMounted(() => {
     fetchBikes();
     map = new Map({
@@ -129,6 +143,10 @@ onMounted(() => {
     map.on("click", addPopUp);
     map.on('load', function() {
         isMapReady.value = true;
+    });
+    map.on('style.load', function () {
+        isImageLoaded.value = false;
+        addBikesToMap();
     });
 
     (busEvent as any).on('updateBikeAttributes', () => {
