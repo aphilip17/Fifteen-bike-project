@@ -2,11 +2,11 @@
     <div class="menu__container mapboxgl-ctrl-top-left">
         <div class="menu__title"><h3 class="">Create new bike</h3></div>
         <div class="menu__body">
-            <div class="pop-up__content">
+            <div class="input__container">
                 <div>Serial number:</div>
                 <input type="text" v-model="serialNumber" placeholder="8ZIEQGJH">
             </div>
-            <div class="pop-up__content">
+            <div class="input__container">
                 <div>In order:</div>
                 <v-select
                     :items="[{value: 1, title: 'false'}, {value: 2, title: 'true'}]"
@@ -14,11 +14,11 @@
                     return-object
                 ></v-select>
             </div>
-            <div class="pop-up__content">
+            <div class="input__container">
                 <div>Battery level:</div>
                 <input type="text" v-model="batteryLevel" placeholder="25">
             </div>
-            <div class="pop-up__content">
+            <div class="input__container">
                 <div>Service status:</div>
                 <v-select
                     :items="[{value: 1, title: 'Free'}, {value: 2, title: 'Booked'}, {value: 3, title: 'In use'}]"
@@ -26,12 +26,12 @@
                     return-object
                 ></v-select>
             </div>
-            <div class="pop-up__content">
+            <div class="input__container">
                 <div>coordinates:</div>
                 <input type="text" v-model="latLng" placeholder="48.875, 2.3352">
             </div>
             <v-btn
-                class="pop-up__save-btn"
+                class="save-btn"
                 color="pink"
                 :disabled="!hasChanges"
                 @click="clickOnSaveButton"
@@ -45,10 +45,10 @@
     </div>
 </template>
 
-<script setup lang="ts">
+<script setup lang='ts'>
 
 import { ref, watch, defineEmits } from 'vue';
-import { useAddBike } from "../composition/fetcher";
+import { useAddBike } from '../composition/fetcher';
 
 const { addBike } = useAddBike();
 
@@ -85,6 +85,7 @@ async function clickOnSaveButton() {
 
     await addBike(data);
     emit('addBike');
+    hasChanges.value = false;
 }
 
 watch([serialNumber, selectedInOrder, serviceStatusSelected, batteryLevel, latLng],

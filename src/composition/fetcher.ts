@@ -1,5 +1,5 @@
-import { GeoJsonProperties, Geometry } from "geojson";
-import { ref } from "vue";
+import { GeoJsonProperties, Geometry } from 'geojson';
+import { ref } from 'vue';
 
 export interface BikeModel {
     id: string;
@@ -21,7 +21,6 @@ export function useFetchBikes() {
         try {
             const response = await fetch('https://629b3242656cea05fc354d33.mockapi.io/bikes');
             const json = await response.json();
-            console.log(json, 'JSON');
             data.value = transformToGeojson(json.bikes);
         } catch (e) {
             error.value = 'Something went wrong when data loading';
@@ -40,7 +39,7 @@ export function useFetchBikes() {
 
 function transformToGeojson(datas: BikeModel[]) {
     const geojson: any = {
-        type: "FeatureCollection",
+        type: 'FeatureCollection',
         features: [],
     };
 
@@ -57,18 +56,18 @@ function transformToGeojson(datas: BikeModel[]) {
         }
 
         geojson.features.push({
-            "type": "Feature",
-            "geometry": {
-                "type": "Point",
-                "coordinates": [data.coordinates[1], data.coordinates[0]]
-                },
-            "properties": {
-            "id": data.id,
-            "serial_number": data.serial_number,
-            "coordinates": data.coordinates,
-            "in_order": data.in_order,
-            "service_status": data.service_status,
-            "battery_level": data.battery_level
+            type: 'Feature',
+            geometry: {
+                type: 'Point',
+                coordinates: [data.coordinates[1], data.coordinates[0]]
+            },
+            properties: {
+                id: data.id,
+                serial_number: data.serial_number,
+                coordinates: data.coordinates,
+                in_order: data.in_order,
+                service_status: data.service_status,
+                battery_level: data.battery_level
             }
         });
     }
@@ -82,7 +81,7 @@ export function useUpdateBikeAttributes(id: string) {
     const updateBikeAttributes = async (updatedData: any) => { /* TODO: Type */
         try {
             const response = await fetch('https://629b3242656cea05fc354d33.mockapi.io/bikes/' + id, {
-                method: "PUT",
+                method: 'PUT',
                 headers: {
                     'Content-type': 'application/json'
                 },
@@ -107,13 +106,13 @@ export function useAddBike() {
     const addBike = async (data: any) => { /* TODO: Type */
         try {
             const response = await fetch('https://629b3242656cea05fc354d33.mockapi.io/bikes/', {
-                method: "POST",
+                method: 'POST',
                 headers: {
                     'Content-type': 'application/json'
                 },
                 body: JSON.stringify(data)
             });
-            const resp = await response.json();
+            await response.json();
             /* XXX: POST method does not create unique identifyer. So id is NaN. Data type response is not formatted. */
 
         } catch (e) {
