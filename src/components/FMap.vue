@@ -13,15 +13,15 @@
 
 <script setup lang="ts">
 
-import { Map, LngLatLike, Popup, MapMouseEvent } from "mapbox-gl";
-import "mapbox-gl/dist/mapbox-gl.css";
+import { Map, LngLatLike, Popup, MapMouseEvent } from 'mapbox-gl';
+import 'mapbox-gl/dist/mapbox-gl.css';
 /* @ts-ignore */
 import vuetify from '../plugins/vuetify';
-import { onMounted, onUnmounted, watch, createApp, ref, inject } from "vue";
-import PopUpComponent from "./PopUp.vue";
-import { useFetchBikes } from "../composition/fetcher";
-import BikeCreation from "./BikeCreation.vue";
-import RadioButtons from "./RadioButtons.vue";
+import { onMounted, onUnmounted, watch, createApp, ref, inject } from 'vue';
+import PopUpComponent from './PopUp.vue';
+import { useFetchBikes } from '../composition/fetcher';
+import BikeCreation from './BikeCreation.vue';
+import RadioButtons from './RadioButtons.vue';
 
 export interface FMapProps {
     /**
@@ -68,7 +68,7 @@ function createLayerSource() {
 
     map.addSource('bikes', {
         type: 'geojson',
-        data: data.value
+        data: data.value,
     });
 
     map.addLayer({
@@ -77,7 +77,7 @@ function createLayerSource() {
         'type': 'symbol',
         'layout': {
         'icon-image': 'bicycle-icon',
-        'icon-size': 0.05
+        'icon-size': 0.05,
         },
         'paint': {
             'icon-color': [
@@ -89,7 +89,7 @@ function createLayerSource() {
                 '#FF8C00',
                 3,
                 '#CC0000' ,
-                '#000000' /* Fallback */
+                '#000000' , /* Fallback */
             ]
         }
     });
@@ -135,12 +135,12 @@ onMounted(() => {
     map = new Map({
         accessToken: import.meta.env.VITE_MAPBOX_ACCESS_TOKEN as string,
         container: 'map',
-        style: "mapbox://styles/mapbox/light-v10",
+        style: 'mapbox://styles/mapbox/light-v10',
         center: props.center,
         zoom: 9,
     });
 
-    map.on("click", addPopUp);
+    map.on('click', addPopUp);
     map.on('load', function() {
         isMapReady.value = true;
     });
@@ -155,7 +155,7 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
-    map.off("click", addPopUp);
+    map.off('click', addPopUp);
     (busEvent as any).off();
 });
 
@@ -164,7 +164,6 @@ watch([data, isMapReady], () => {
         return;
     }
     addBikesToMap();
-    console.log(data);
 });
 
 </script>
